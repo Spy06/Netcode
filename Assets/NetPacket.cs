@@ -72,9 +72,7 @@ namespace NetCode
 
 		private void Resend(){
 			if (retry >= NetSocket.MAX_PACKET_RETRY || acked) {
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine ("Something is wrong with your connection");
-				Console.ForegroundColor = ConsoleColor.White;
+				UnityEngine.Debug.Log ("Something is wrong with your connection");
 				return;
 			}
 
@@ -84,7 +82,7 @@ namespace NetCode
 			timer.Start ();
 		}
 
-		public void ReceiveMessage(byte[] buffer, int recv, EndPoint ep){
+		public void ReceiveMessage(byte[] buffer, int recv){
 			byte[] _data = new byte[recv];
 			Array.Copy (buffer, _data, recv);
 
@@ -96,7 +94,7 @@ namespace NetCode
 			acked = true;
 
 			if (sendOpt == SendOptions.Reliable) {
-				conn.SendAck (packetID, ep);
+				//conn.SendAck (packetID, ep);
 				conn.ProcessPacket (this);
 			} else {
 				ReadMessage ();
@@ -105,7 +103,7 @@ namespace NetCode
 
 		public void ReadMessage(){
 			string msg = reader.ReadString ();
-			Console.WriteLine ("Packet ID ({0})Message: {1}", packetID, msg);
+			UnityEngine.Debug.Log ("Packet ID ( " + packetID + ") Message: " + msg);
 		}
 
 		/// <summary>
@@ -113,6 +111,14 @@ namespace NetCode
 		/// </summary>
 		/// <param name="msg">Message.</param>
 		public void WriteMessage(string msg){
+			writer.Write (msg);
+		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(float msg){
 			writer.Write (msg);
 		}
 

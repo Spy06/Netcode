@@ -11,7 +11,6 @@ namespace NetCode
 {
 	public class NetSocket{
 		public const int MAX_PACKET_RETRY = 10;
-		public const int MAX_HEARTBEAT = 10;
 
 		private Dictionary<int, NetPacket> tracker = new Dictionary<int, NetPacket>();
 
@@ -62,7 +61,7 @@ namespace NetCode
 			} else {
 				endPoint = new IPEndPoint (IPAddress.Any, port);
 				socket.Bind (endPoint);
-				Console.WriteLine ("Listening...");
+				UnityEngine.Debug.Log ("Listening...");
 			}
 		}
 
@@ -70,10 +69,8 @@ namespace NetCode
 			EndPoint targetConnect = (EndPoint)endPoint;
 			socket.Connect (targetConnect);
 
-			Console.ForegroundColor = ConsoleColor.Green;
-			Console.WriteLine ("Connecting to {0}", targetConnect.ToString ());
+			UnityEngine.Debug.Log ("Connecting to " + targetConnect.ToString ());
 
-			Console.ForegroundColor = ConsoleColor.Cyan;
 		}
 
 		public EndPoint PollEvents(){
@@ -82,7 +79,7 @@ namespace NetCode
 				byte[] buffer =  new byte[1024];
 				int recv = socket.ReceiveFrom (buffer, ref ep);
 				NetPacket packet = new NetPacket (1024, this);
-				packet.ReceiveMessage(buffer, recv, ep);
+				packet.ReceiveMessage(buffer, recv);
 				return ep;
 			}
 
@@ -113,7 +110,7 @@ namespace NetCode
 		public void ProcessPacket(NetPacket packet){
 			NetPacket p;
 			if (tracker.TryGetValue (packet.PacketID, out p)) {
-				
+
 			} else {
 				tracker.Add (packet.PacketID, packet);
 				packet.ReadMessage ();

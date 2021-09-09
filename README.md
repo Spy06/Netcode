@@ -1,5 +1,5 @@
 # Netcode
-LEARNING ONLY
+(LEARNING ONLY)
 A simple code, teaching you how to connect 2 different project using Dgram UDP Socket
 
 UDP, is a protocol that allows user to send packets fast. Fast, i mean, the data can be duplicated, or dropped

@@ -84,7 +84,7 @@ namespace NetCode
 			timer.Start ();
 		}
 
-		public void ReceiveMessage(byte[] buffer, int recv, EndPoint ep){
+		public void ReceiveMessage(byte[] buffer, int recv){
 			byte[] _data = new byte[recv];
 			Array.Copy (buffer, _data, recv);
 
@@ -96,7 +96,7 @@ namespace NetCode
 			acked = true;
 
 			if (sendOpt == SendOptions.Reliable) {
-				conn.SendAck (packetID, ep);
+				//conn.SendAck (packetID, ep);
 				conn.ProcessPacket (this);
 			} else {
 				ReadMessage ();

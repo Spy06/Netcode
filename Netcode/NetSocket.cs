@@ -77,7 +77,7 @@ namespace NetCode
 		}
 
 		public EndPoint PollEvents(){
-			if (socket.Poll (50000, SelectMode.SelectRead)) {
+			if (socket.Poll (0, SelectMode.SelectRead)) {
 				EndPoint ep = new IPEndPoint (IPAddress.Any, 0);
 				byte[] buffer =  new byte[1024];
 				int recv = socket.ReceiveFrom (buffer, ref ep);
@@ -116,7 +116,7 @@ namespace NetCode
 				
 			} else {
 				tracker.Add (packet.PacketID, packet);
-				packet.ReadMessage ();
+				packet.ReadString ();
 			}
 		}
 

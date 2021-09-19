@@ -16,5 +16,10 @@ public enum PacketType : byte{
 	/// <summary>
 	/// Acknowledgement, used for replying a reliable message
 	/// </summary>
-	Ack
+	Ack,
+
+	/// <summary>
+	/// Position packet
+	/// </summary>
+	Position
 }

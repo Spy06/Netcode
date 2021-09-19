@@ -7,3 +7,4 @@ And this is where the reliability system comes in, it will detect the lost packe
 Dont forget to set the Run In Background to true (Project Settings > Player)
 
 NOTE: THERE ARE MAYBE SOME BUGS.
+NOTE AGAIN: YES, THERE ARE SO MANY BUGS lol

@@ -11,8 +11,7 @@ namespace NetCode
 {
 	public class NetSocket{
 		public const int MAX_PACKET_RETRY = 10;
-
-		private bool preventDuplication = true;
+		public const int MAX_HEARTBEAT = 10;
 
 		private Dictionary<int, NetPacket> tracker = new Dictionary<int, NetPacket>();
 
@@ -78,12 +77,12 @@ namespace NetCode
 		}
 
 		public EndPoint PollEvents(){
-			if (socket.Poll (50000, SelectMode.SelectRead)) {
+			if (socket.Poll (0, SelectMode.SelectRead)) {
 				EndPoint ep = new IPEndPoint (IPAddress.Any, 0);
 				byte[] buffer =  new byte[1024];
 				int recv = socket.ReceiveFrom (buffer, ref ep);
 				NetPacket packet = new NetPacket (1024, this);
-				packet.ReceiveMessage(buffer, recv);
+				packet.ReceiveMessage(buffer, recv, ep);
 				return ep;
 			}
 
@@ -114,10 +113,10 @@ namespace NetCode
 		public void ProcessPacket(NetPacket packet){
 			NetPacket p;
 			if (tracker.TryGetValue (packet.PacketID, out p)) {
-
+				
 			} else {
 				tracker.Add (packet.PacketID, packet);
-				packet.ReadMessage ();
+				packet.ReadString ();
 			}
 		}
 

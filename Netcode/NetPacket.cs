@@ -84,7 +84,7 @@ namespace NetCode
 			timer.Start ();
 		}
 
-		public void ReceiveMessage(byte[] buffer, int recv){
+		public void ReceiveMessage(byte[] buffer, int recv, EndPoint ep){
 			byte[] _data = new byte[recv];
 			Array.Copy (buffer, _data, recv);
 
@@ -94,18 +94,34 @@ namespace NetCode
 			SendOptions sendOpt = (SendOptions)reader.ReadByte ();
 			PacketType packetType = (PacketType)reader.ReadByte ();
 			acked = true;
-
-			if (sendOpt == SendOptions.Reliable) {
-				//conn.SendAck (packetID, ep);
-				conn.ProcessPacket (this);
-			} else {
-				ReadMessage ();
+			if (packetType == PacketType.Data) {
+				if (sendOpt == SendOptions.Reliable) {
+					conn.SendAck (packetID, ep);
+					conn.ProcessPacket (this);
+				} else {
+					ReadString ();
+				}
+			
+			} else if (packetType == PacketType.Position) {
+				int ip = reader.ReadInt32 ();
+				float x = reader.ReadSingle ();
+				float y = reader.ReadSingle ();
+				float z = reader.ReadSingle ();
+				Vector3 received = new Vector3 (x, y, z);
+				Server.MainClass.OnPositionReceived (received, ip);
 			}
 		}
 
-		public void ReadMessage(){
+		public string ReadString(){
 			string msg = reader.ReadString ();
-			Console.WriteLine ("Packet ID ({0})Message: {1}", packetID, msg);
+			if (msg.Contains ("Ack"))
+				Console.WriteLine ("Packet ID ({0})Message: {1}", packetID, msg);
+
+			return msg;
+		}
+
+		public float ReadFloat(){
+			return reader.ReadSingle ();
 		}
 
 		/// <summary>
@@ -113,6 +129,30 @@ namespace NetCode
 		/// </summary>
 		/// <param name="msg">Message.</param>
 		public void WriteMessage(string msg){
+			writer.Write (msg);
+		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(float msg){
+			writer.Write (msg);
+		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(int msg){
+			writer.Write (msg);
+		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(bool msg){
 			writer.Write (msg);
 		}
 

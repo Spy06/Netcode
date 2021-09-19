@@ -9,7 +9,17 @@ public enum PacketType : byte{
 	Data,
 
 	/// <summary>
+	/// Client connection
+	/// </summary>
+	Connection,
+
+	/// <summary>
 	/// Acknowledgement, used for replying a reliable message
 	/// </summary>
-	Ack
+	Ack,
+
+	/// <summary>
+	/// Position packet
+	/// </summary>
+	Position
 }

@@ -11,8 +11,11 @@ namespace NetCode
 {
 	public class NetSocket{
 		public const int MAX_PACKET_RETRY = 10;
+		public const int MAX_HEARTBEAT = 10;
 
 		private Dictionary<int, NetPacket> tracker = new Dictionary<int, NetPacket>();
+
+		internal INetHandler handler;
 
 		private Socket socket;
 
@@ -55,7 +58,8 @@ namespace NetCode
 			return this;
 		}
 
-		public void Build(){
+		public void Build(INetHandler _handler){
+			handler = _handler;
 			if (cType == ConnectionType.Connect) {
 				endPoint = new IPEndPoint (IPAddress.Parse (ip), port);
 			} else {
@@ -69,17 +73,16 @@ namespace NetCode
 			EndPoint targetConnect = (EndPoint)endPoint;
 			socket.Connect (targetConnect);
 
-			UnityEngine.Debug.Log ("Connecting to " + targetConnect.ToString ());
-
+			UnityEngine.Debug.Log ("Connecting to " + targetConnect);
 		}
 
 		public EndPoint PollEvents(){
-			if (socket.Poll (50000, SelectMode.SelectRead)) {
+			if (socket.Poll (0, SelectMode.SelectRead)) {
 				EndPoint ep = new IPEndPoint (IPAddress.Any, 0);
 				byte[] buffer =  new byte[1024];
 				int recv = socket.ReceiveFrom (buffer, ref ep);
 				NetPacket packet = new NetPacket (1024, this);
-				packet.ReceiveMessage(buffer, recv);
+				packet.ReceiveMessage(buffer, recv, ep);
 				return ep;
 			}
 
@@ -113,7 +116,7 @@ namespace NetCode
 
 			} else {
 				tracker.Add (packet.PacketID, packet);
-				packet.ReadMessage ();
+				packet.ReadString ();
 			}
 		}
 
@@ -132,6 +135,11 @@ namespace NetCode
 
 			byte[] data = packet.GetData ();
 			socket.SendTo (data, target);
+		}
+
+		public void Close(){
+			socket.Close ();
+			socket = null;
 		}
 	}
 }

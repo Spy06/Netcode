@@ -72,7 +72,7 @@ namespace NetCode
 
 		private void Resend(){
 			if (retry >= NetSocket.MAX_PACKET_RETRY || acked) {
-				UnityEngine.Debug.Log ("Something is wrong with your connection");
+				UnityEngine.Debug.Log ("Something is wrong");
 				return;
 			}
 
@@ -82,7 +82,7 @@ namespace NetCode
 			timer.Start ();
 		}
 
-		public void ReceiveMessage(byte[] buffer, int recv){
+		public void ReceiveMessage(byte[] buffer, int recv, EndPoint ep){
 			byte[] _data = new byte[recv];
 			Array.Copy (buffer, _data, recv);
 
@@ -93,17 +93,36 @@ namespace NetCode
 			PacketType packetType = (PacketType)reader.ReadByte ();
 			acked = true;
 
-			if (sendOpt == SendOptions.Reliable) {
-				//conn.SendAck (packetID, ep);
-				conn.ProcessPacket (this);
-			} else {
-				ReadMessage ();
+			if (packetType == PacketType.Data) {
+				if (sendOpt == SendOptions.Reliable) {
+					conn.SendAck (packetID, ep);
+					conn.ProcessPacket (this);
+				} else {
+					ReadString ();
+				}
+			} else if (packetType == PacketType.Connection) {
+				UnityEngine.Debug.Log ("connection");
+				conn.handler.OnClientConnected (reader.ReadInt32 (), reader.ReadBoolean ());
+			} else if (packetType == PacketType.Position) {
+				int ip = reader.ReadInt32 ();
+				float x = reader.ReadSingle ();
+				float y = reader.ReadSingle ();
+				float z = reader.ReadSingle ();
+				UnityEngine.Vector3 received = new UnityEngine.Vector3 (x, y, z);
+				conn.handler.OnPositionReceived (received, ip);
 			}
 		}
 
-		public void ReadMessage(){
+		public string ReadString(){
 			string msg = reader.ReadString ();
-			UnityEngine.Debug.Log ("Packet ID ( " + packetID + ") Message: " + msg);
+			if (msg.Contains ("Ack"))
+				UnityEngine.Debug.Log ("Packet ID ("+ packetID +")Message: " + msg);
+
+			return msg;
+		}
+
+		public float ReadFloat(){
+			return reader.ReadSingle ();
 		}
 
 		/// <summary>
@@ -121,6 +140,23 @@ namespace NetCode
 		public void WriteMessage(float msg){
 			writer.Write (msg);
 		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(int msg){
+			writer.Write (msg);
+		}
+
+		/// <summary>
+		/// Write a message to the packet
+		/// </summary>
+		/// <param name="msg">Message.</param>
+		public void WriteMessage(bool msg){
+			writer.Write (msg);
+		}
+
 
 		public byte[] GetData(){
 			return data;
